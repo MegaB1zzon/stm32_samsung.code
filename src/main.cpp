@@ -21,19 +21,32 @@ void processCommand(const String &cmd) {
     return;
   }
 
-  char last = s.charAt(s.length() - 1);
-  bool isCelsius = false;
+  int len = s.length();
+  int suffixLen = 0; // number of bytes used by suffix
 
-  if (last == 'C' || last == 'c' || last == 'С' || last == 'с') {
-    isCelsius = true;
+  // Check ASCII 'C' or 'c'
+  if (len >= 1) {
+    char last = s.charAt(len - 1);
+    if (last == 'C' || last == 'c') {
+      suffixLen = 1;
+    }
   }
 
-  if (!isCelsius) {
-    S∞erial.println("Error: send value ending with C, e.g. 16C");
+  // Check Cyrillic 'С' (U+0421 -> 0xD0 0xA1) or 'с' (U+0441 -> 0xD1 0x81)
+  if (suffixLen == 0 && len >= 2) {
+    uint8_t b1 = (uint8_t)s.charAt(len - 2);
+    uint8_t b2 = (uint8_t)s.charAt(len - 1);
+    if ((b1 == 0xD0 && b2 == 0xA1) || (b1 == 0xD1 && b2 == 0x81)) {
+      suffixLen = 2;
+    }
+  }
+
+  if (suffixLen == 0) {
+    Serial.println("Error: send value ending with C, e.g. 16C");
     return;
   }
 
-  String numberPart = s.substring(0, s.length() - 1);
+  String numberPart = s.substring(0, len - suffixLen);
   numberPart.trim();
   int value = numberPart.toInt();
 
