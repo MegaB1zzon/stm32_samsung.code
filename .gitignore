@@ -6,3 +6,8 @@
 
 # macOS
 .DS_Store
+
+# Логи та артефакти збірки
+build_errors.txt
+build_output.txt
+boards.json
